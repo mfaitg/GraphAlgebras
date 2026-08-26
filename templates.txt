@@ -1,0 +1,119 @@
+groundField := #DEFINE THE GROUND FIELD HERE
+
+
+#######################################
+## Implementation of rewriting rules ##
+#######################################
+
+# Replace A EVERYWHERE with the name of your hoice for the algebra.
+# Replace x1, ..., xn  with names of your choice for the generators.
+
+monoA := FreeMonoid("x1", "x2", ..., "xn");  # Use "FreeGroup" instead of "FreeMonoid" if your algebra has invertible generators.
+lx1 := monoA.1;  lx2 := monoA.2;  ...  lxn := monoA.n;
+
+A := FreeMagmaRing(groundField, monoA);
+embA := Embedding(monoA, A);
+
+1 := lx1^embA;  x2 := lx2^embA;  ...  xn := lxn^embA;
+1A := One(A);  0A := Zero(A);
+
+# Write here the COMPLETE list of rewriting rules, following the indicated format.
+# Do not forget the rewriting rules for inverses of the generators which are invertible!!
+relationsA := [ [pattern_1, replace_1], ..., [pattern_k, replace_k] ];
+
+
+# In the functions below, replace the letter "A" EVERYWHERE by the actual name of your algebra.
+
+applyRuleA := function(word)
+   local i, pos, pattern, replace, prefix, suffix;
+   for i in [ 1 .. Length(relationsA) ] do
+      pattern := relationsA[i][1];
+      replace := relationsA[i][2];
+      pos := PositionWord(word, pattern, 1);
+      if pos <> fail then
+         prefix := Subword(word, 1, pos-1);
+         suffix := Subword(word, pos+Length(pattern), Length(word));
+         return (prefix^embA)*replace*(suffix^embA);
+      fi;
+   od;
+   return word^embA;
+end;
+
+reduceA := function(P)
+   local i, listP, wordsP, coeffsP, redP;
+   listP := CoefficientsAndMagmaElements(P);
+   wordsP := listP{ [ 1,3 .. Length(listP)-1 ] };
+   coeffsP := listP{ [ 2,4 .. Length(listP) ] };
+   Unbind(listP); #Delete local variable listP, not used in the sequel.
+   
+   redP := 0A;  #Zero element in the free algebra
+   for i in [ 1 .. Length(wordsP) ] do
+      redP := redP + coeffsP[i]*applyRuleA(wordsP[i]);
+   od;
+   if redP = P then
+      return P;
+   else
+      return reduceA(redP);
+   fi;
+end;
+
+
+
+
+###########################################################
+## Implementation of a morphism of algebras f : A ---> B ##
+###########################################################
+
+# Assume that we have two algebras A and B defined as above, thus coming with GAP functions reduceA and reduceB.
+# As above, generators of A are denoted by x1, ..., xn and generators of the underlying monoid/group are denoted by lx1, ..., lxn. Change with names of your choice.
+
+# Change EVERYWHERE the letter "f" by the actual name of your morphism, and similarly for "A" and "B".
+
+
+# Enter the list of images of generators of A through the morphism f, following the indicated format:
+im_f := [ [lx1, value_1], ..., [lxn, value_n] ];
+
+
+# In the functions below, replace the letters "A" and "B" EVERYWHERE by the actual name of your algebras, and "f" by the actual name of your morphism.
+
+apply_f := function(word)
+   local i, img, poly;
+   poly := One(B); #Unit element in the target algebra
+   for i in [ 1 .. Length(word) ] do
+      for img in im_f do
+         if Subword(word,i,i) = img[1] then
+            poly := poly*img[2];
+            break;
+         fi;
+      od;
+   od;
+   return poly;
+end;
+
+
+f := function(P)
+   local i, listP, wordsP, coeffsP, fP;
+   listP := CoefficientsAndMagmaElements(P);
+   wordsP := listP{ [ 1,3 .. Length(listP)-1 ] };
+   coeffsP := listP{ [ 2,4 .. Length(listP) ] };
+   Unbind(listP); #Delete local variable listP, not used in the sequel.
+   fP := Zero(B);  #Zero element in the target algebra
+   for i in [ 1 .. Length(wordsP) ] do
+      fP := fP + coeffsP[i]*apply_f(wordsP[i]);
+   od;
+  return reduceB(fP);
+end;
+
+
+isCompatibleAB := function(f)
+   local rel, answer;
+   answer := true;
+   for rel in relationsA do
+      if f(rel[1]^embA) <> f(rel[2]) then
+        answer := false;
+        break;
+      fi;
+   od;
+   return answer;
+end;
+
