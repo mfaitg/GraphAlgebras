@@ -561,3 +561,4 @@ U := 1Frol + X1*X2;;  V := 1Frol + X3*X4;;
 # C21 = q^(-2)*reduceFrol(-X1 - U*X3 + X1*C22*Y2^(-2) + q^2*X3*C22*Y1^2*Y2^(-2));
 ## Answer is "true", meaning that the equality is correct
 
+
