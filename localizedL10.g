@@ -15,7 +15,7 @@ q := s^2;
 # ord := 3;
 # groundField := CF(ord);
 # q := E(ord);
-# s := E( (ord+1)/2 );
+# s := q^( (ord+1)/2 ); #Square root of q, of order ord.
 
 
 hq := q - q^(-1);
@@ -183,14 +183,14 @@ end;
 ## Frolov's algebra ##
 ######################
 
-groupFrol := FreeGroup("X1","X2","X3","X4","D","K");
+groupFrol := FreeGroup("X1","X2","X3","X4","Y1","Y2");
 lX1 := groupFrol.1;  lX2 := groupFrol.2;  lX3 := groupFrol.3;
-lX4 := groupFrol.4;  lD := groupFrol.5;  lK := groupFrol.6;
+lX4 := groupFrol.4;  lY1 := groupFrol.5;  lY2 := groupFrol.6;
 
 Frol := FreeMagmaRing(groundField, groupFrol);
 embFrol := Embedding(groupFrol, Frol);
 X1 := lX1^embFrol;  X2 := lX2^embFrol; X3 := lX3^embFrol;
-X4 := lX4^embFrol;  D := lD^embFrol;  K := lK^embFrol;
+X4 := lX4^embFrol;  Y1 := lY1^embFrol;  Y2 := lY2^embFrol;
 1Frol := One(Frol);  0Frol := Zero(Frol);
 
 
@@ -198,12 +198,12 @@ relationsFrol := [
    [lX2*lX1, q^(-2)*X1*X2 - q^(-1)*hq*1Frol],  [lX3*lX1, q^2*X1*X3], [lX4*lX1, q^(-2)*X1*X4],
    [lX3*lX2, q^(-2)*X2*X3 - q^(-1)*hq*1Frol],  [lX4*lX2, q^2*X2*X4], [lX4*lX3, q^(-2)*X3*X4 - q^(-1)*hq*1Frol],
 
-   [lK*lD, q^(-1)*D*K],  [lK^(-1)*lD, q*D*K^(-1)],  [lK*lD^(-1), q*D^(-1)*K],  [lK^(-1)*lD^(-1), q^(-1)*D^(-1)*K^(-1)],
+   [lY2*lY1, q^(-1)*Y1*Y2],  [lY2^(-1)*lY1, q*Y1*Y2^(-1)],  [lY2*lY1^(-1), q*Y1^(-1)*Y2],  [lY2^(-1)*lY1^(-1), q^(-1)*Y1^(-1)*Y2^(-1)],
 
-   [lK*lX1, X1*K],  [lK*lX2, X2*K],  [lK*lX3, X3*K],  [lK*lX4, X4*K],
-   [lK^(-1)*lX1, X1*K^(-1)],  [lK^(-1)*lX2, X2*K^(-1)],  [lK^(-1)*lX3, X3*K^(-1)],  [lK^(-1)*lX4, X4*K^(-1)],
-   [lD*lX1, X1*D],  [lD*lX2, X2*D],  [lD*lX3, X3*D],  [lD*lX4, X4*D],
-   [lD^(-1)*lX1, X1*D^(-1)],  [lD^(-1)*lX2, X2*D^(-1)],  [lD^(-1)*lX3, X3*D^(-1)],  [lD^(-1)*lX4, X4*D^(-1)]
+   [lY1*lX1, X1*Y1],  [lY1*lX2, X2*Y1],  [lY1*lX3, X3*Y1],  [lY1*lX4, X4*Y1],
+   [lY1^(-1)*lX1, X1*Y1^(-1)],  [lY1^(-1)*lX2, X2*Y1^(-1)],  [lY1^(-1)*lX3, X3*Y1^(-1)],  [lY1^(-1)*lX4, X4*Y1^(-1)],
+   [lY2*lX1, X1*Y2],  [lY2*lX2, X2*Y2],  [lY2*lX3, X3*Y2],  [lY2*lX4, X4*Y2],
+   [lY2^(-1)*lX1, X1*Y2^(-1)],  [lY2^(-1)*lX2, X2*Y2^(-1)],  [lY2^(-1)*lX3, X3*Y2^(-1)],  [lY2^(-1)*lX4, X4*Y2^(-1)]
  ];
 
 
@@ -329,6 +329,15 @@ HqToL10 := function(P)
   return reduceL10Loc(fP);
 end;
 
+#You can check that the morphisms L10ToHq and HqToL10 are indeed inverse each other by running the following commands in the console (uncomment before copy-pasting):
+# for el in [bA, cA, dA, dA^(-1), bB, cB, dB, dB^(-1)] do
+#    Print( "HqToL10(L10ToHq( ",el," )) = ", HqToL10(L10ToHq(el)), "\n" );
+# od;
+
+# for el in [e, f, k, k^(-1), b, c, d, d^(-1)] do
+#    Print( "L10ToHq(HqToL10( ",el," )) = ", L10ToHq(HqToL10(el)), "\n" );
+# od;
+
 
 
 ################################################################
@@ -337,7 +346,7 @@ end;
 
 ## Morphism Frol ---> HqLoc ##
 im_FrolToHq := [ [lX1, -c*d*k^(-1)], [lX2, q^(-1)*hq*d^(-2)*f*k], [lX3, hq*d^2*e + q^2*c*d*k],
-                 [lX4, b*d^(-1)*k^(-1)], [lD, d], [lD^(-1), d^(-1)], [lK, k], [lK^(-1), k^(-1)] ];
+                 [lX4, b*d^(-1)*k^(-1)], [lY1, k^(-1)], [lY1^(-1), k], [lY2, s*d*k^(-1)], [lY2^(-1), s*d^(-1)*k] ];
 
 apply_FrolToHq := function(word)
    local i, img, poly;
@@ -383,9 +392,9 @@ end;
 
 
 ## Inverse morphism, HqLoc ---> Frol ##
-im_HqToFrol := [ [le, hq^(-1)*X3*D^(-2) + q^2*hq^(-1)*X1*D^(-2)*K^2], [lf, q*hq^(-1)*X2*D^2*K^(-1)],
-                 [lk, K], [lk^(-1), K^(-1)],
-                 [lb, q^(-1)*X4*D*K], [lc, -X1*K*D^(-1)], [ld, D], [ld^(-1), D^(-1)] ];
+im_HqToFrol := [ [le, hq^(-1)*( X1 + q^2*X3*Y1^2 )*Y2^(-2)], [lf, q*hq^(-1)*X2*Y1^(-1)*Y2^2],
+                 [lk, Y1^(-1)], [lk^(-1), Y1],
+                 [lb, s*X4*Y1^(-2)*Y2], [lc, -s*X1*Y2^(-1)], [ld, s*Y1^(-1)*Y2], [ld^(-1), s*Y1*Y2^(-1)] ];
 
 apply_HqToFrol := function(word)
    local i, img, poly;
@@ -415,6 +424,15 @@ HqToFrol := function(P)
 end;
 
 
+#You can check that the morphisms FrolToHq and HqToFrol are indeed inverse each other by running the following commands in the console (uncomment before copy-pasting):
+# for el in [X1, X2, X3, X4, Y1, Y1^(-1), Y2, Y2^(-1)] do
+#    Print( "HqToFrol(FrolToHq( ",el," )) = ", HqToFrol(FrolToHq(el)), "\n" );
+# od;
+
+# for el in [e, f, k, k^(-1), b, c, d, d^(-1)] do
+#    Print( "FrolToHq(HqToFrol( ",el," )) = ", FrolToHq(HqToFrol(el)), "\n" );
+# od;
+
 
 
 #################################################################
@@ -424,8 +442,8 @@ end;
 ## Morphism Frol ---> L10Loc ##
 
 im_FrolToL10 := [ [lX1, q^2*(cA*dA^(-1)*dB - cB)*dB], [lX2, q^2*bA*dA*dB^(-2)], [lX3, dA^(-2)*cB*dB],
-                  [lX4, dA^2*bB*dB^(-1) - q^4*bA*dA], [lD, s*dA^(-1)*dB], [lD^(-1), s*dA*dB^(-1)],
-                  [lK, dA^(-1)], [lK^(-1), dA] ];
+                  [lX4, dA^2*bB*dB^(-1) - q^4*bA*dA], [lY1, dA], [lY1^(-1), dA^(-1)],
+                  [lY2, dB], [lY2^(-1), dB^(-1)] ];
 
 apply_FrolToL10 := function(word)
    local i, img, poly;
@@ -470,28 +488,13 @@ isCompatibleFrolL10 := function(f)
    return answer;
 end;
 
-# The following GAP function allows us to check that these values indeed define a morphism.
-# For this it suffices to launch the command "isCompatibleFrolL10(FrolToL10);" in the GAP console.
-isCompatibleFrolL10 := function(f)
-   local rel, answer;
-   answer := true;
-   for rel in relationsFrol do
-      if f(rel[1]^embFrol) <> f(rel[2]) then
-        answer := false;
-        Print(rel,"\n");
-        break;
-      fi;
-   od;
-   return answer;
-end;
-
 
 
 ## Inverse morphism L10Loc ---> Frol ##
 
-im_L10ToFrol := [ [lbA, X2*D^2*K^(-1)], [lcA, X1*D^(-2)*K + q^(-2)*X3*D^(-2)*K^(-1)], [ldA, K^(-1)], [ldA^(-1), K],
-                  [lbB, s^(-3)*X4*D*K + s*X2*D^3*K^(-1)], [lcB, s^(-3)*X3*D^(-1)*K^(-1)], [ldB, s*D*K^(-1)],
-                  [ldB^(-1), s*D^(-1)*K] ];
+im_L10ToFrol := [ [lbA, X2*Y1^(-1)*Y2^2], [lcA, ( X1 + q^2*X3*Y1^2 )*Y1*Y2^(-2)], [ldA, Y1], [ldA^(-1), Y1^(-1)],
+                  [lbB, X4*Y1^(-2)*Y2 + q^2*X2*Y1^(-2)*Y2^3], [lcB, X3*Y1^2*Y2^(-1)], [ldB, Y2],
+                  [ldB^(-1), Y2^(-1)] ];
 
 
 apply_L10ToFrol := function(word)
@@ -520,4 +523,41 @@ L10ToFrol := function(P)
    od;
   return reduceFrol(fP);
 end;
+
+
+#You can check that the morphisms FrolToL10 and L10ToFrol are indeed inverse each other by running the following commands in the console (uncomment before copy-pasting):
+# for el in [X1, X2, X3, X4, Y1, Y1^(-1), Y2, Y2^(-1)] do
+#    Print( "L10ToFrol(FrolToL10( ",el," )) = ", L10ToFrol(FrolToL10(el)), "\n" );
+# od;
+
+# for el in [bA, cA, dA, dA^(-1), bB, cB, dB, dB^(-1)] do
+#    Print( "FrolToL10(L10ToFrol( ",el," )) = ", FrolToL10(L10ToFrol(el)), "\n" );
+# od;
+
+
+
+######################################################################
+## Computing the Quantum Moment Map in terms of Frolov's generators ##
+######################################################################
+
+A := [ [aA, bA], [cA, dA] ];;
+invA := [ [dA, -q^2*bA], [-q^2*cA, q^2*aA - q*hq*dA] ];;
+B := [ [aB, bB], [cB, dB] ];;
+invB := [ [dB, -q^2*bB], [-q^2*cB, q^2*aB - q*hq*dB] ];;
+C := q^(-3)*B*invA*invB*A;;
+C11 := L10ToFrol(C[1][1]);;  C12 := L10ToFrol(C[1][2]);;
+C21 := L10ToFrol(C[2][1]);;  C22 := L10ToFrol(C[2][2]);;
+
+U := 1Frol + X1*X2;;  V := 1Frol + X3*X4;;
+
+# Run the following commands to check the expressions of C12, C21 and C22 through Frolov's isomorphism (uncomment before copy-pasting in the console):
+
+# C22 = q^(-2)*reduceFrol(U*V + X1*X4);
+## Answer is "true", meaning that the equality is correct
+
+# C12 = q^(-2)*reduceFrol(-X4 - X2*V + C22*X4*Y1^(-2) + q^2*C22*X2*Y1^(-2)*Y2^2);
+## Answer is "true", meaning that the equality is correct
+
+# C21 = q^(-2)*reduceFrol(-X1 - U*X3 + X1*C22*Y2^(-2) + q^2*X3*C22*Y1^2*Y2^(-2));
+## Answer is "true", meaning that the equality is correct
 
